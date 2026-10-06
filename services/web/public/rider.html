@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function () {
+  var l = localStorage.getItem("rideflow.lang") || "ar";
+  document.documentElement.lang = l;
+  document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+})();
+</script>
+<title>RideFlow — Rider</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="nav"></div>
+<div class="page">
+  <div class="page-header">
+    <h1 data-i18n="rider.title"></h1>
+    <p data-i18n="rider.subtitle"></p>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h2 data-i18n="rider.newTrip.heading"></h2>
+      <p class="hint" data-i18n="rider.newTrip.hint"></p>
+      <form id="trip-form">
+        <div class="field">
+          <label for="origin" data-i18n="rider.label.origin"></label>
+          <input id="origin" required data-i18n-placeholder="rider.placeholder.origin">
+        </div>
+        <div class="field">
+          <label for="destination" data-i18n="rider.label.destination"></label>
+          <input id="destination" required data-i18n-placeholder="rider.placeholder.destination">
+        </div>
+        <div class="field">
+          <label for="fare" data-i18n="rider.label.fare"></label>
+          <input id="fare" type="number" min="1" step="0.5" required placeholder="18.5" style="direction:ltr; text-align:right;">
+        </div>
+        <button class="btn-primary btn-block" type="submit" data-i18n="rider.submit"></button>
+      </form>
+      <div id="form-error" class="unreachable" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="rider.howTo.heading"></h2>
+      <p class="hint" data-i18n="rider.howTo.hint"></p>
+      <div class="stepper" style="margin-top:0;">
+        <div class="step done"><div class="node"></div><div class="label" data-i18n="stage.requested"></div></div>
+        <div class="step-line done"></div>
+        <div class="step done"><div class="node"></div><div class="label" data-i18n="stage.accepted"></div></div>
+        <div class="step-line done"></div>
+        <div class="step done"><div class="node"></div><div class="label" data-i18n="stage.completed"></div></div>
+        <div class="step-line done"></div>
+        <div class="step done"><div class="node"></div><div class="label" data-i18n="stage.fraud"></div></div>
+        <div class="step-line done"></div>
+        <div class="step done"><div class="node"></div><div class="label" data-i18n="stage.paid"></div></div>
+        <div class="step-line done"></div>
+        <div class="step done"><div class="node"></div><div class="label" data-i18n="stage.notified"></div></div>
+      </div>
+      <p class="hint" style="margin-top:12px; margin-bottom:0;" data-i18n-html="rider.howTo.footer"></p>
+    </div>
+  </div>
+
+  <div class="page-header" style="margin-top:32px;">
+    <h1 data-i18n="rider.myTrips.heading"></h1>
+  </div>
+  <div id="trips"><div class="empty" data-i18n="rider.connecting"></div></div>
+</div>
+<script src="/app.js"></script>
+<script src="/rider.js"></script>
+</body>
+</html>

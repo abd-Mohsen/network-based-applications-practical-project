@@ -1,0 +1,160 @@
+openapi: 3.0.3
+info:
+  title: Trip Service API
+  version: "1.0.0"
+  description: >
+    Contract-first spec for trip-service's v1 routes (lecture p.9, p.12).
+    This file is the source of truth a consumer is built against -- write it
+    before the code, and generate client/tests from it.
+paths:
+  /v1/trips:
+    post:
+      summary: Request a trip (or create one already-completed, with autoComplete)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripRequest"
+      responses:
+        "201":
+          description: Trip created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripV1"
+    get:
+      summary: List trips, optionally filtered
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [requested, accepted, completed] }
+        - in: query
+          name: riderId
+          schema: { type: string }
+        - in: query
+          name: driverId
+          schema: { type: string }
+      responses:
+        "200":
+          description: Trips matching the filter
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripV1"
+  /v1/trips/{id}:
+    get:
+      summary: Read a trip
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Trip found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripV1"
+        "404":
+          description: Trip not found
+  /v1/trips/{id}/accept:
+    post:
+      summary: A driver accepts a requested trip
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [driverId]
+              properties:
+                driverId: { type: string }
+      responses:
+        "200": { description: "Trip accepted" }
+        "404": { description: "Trip not found" }
+        "409": { description: "Trip is not in the requested state" }
+  /v1/trips/{id}/complete:
+    post:
+      summary: The assigned driver completes the trip -- this is what fires trip.completed
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: "Trip completed" }
+        "404": { description: "Trip not found" }
+        "409": { description: "Trip is not in the accepted state" }
+
+components:
+  schemas:
+    TripRequest:
+      type: object
+      required: [origin, destination, fare]
+      properties:
+        origin:
+          type: string
+        destination:
+          type: string
+        fare:
+          type: number
+        riderId:
+          type: string
+          description: Optional, additive -- defaults to "anonymous" if omitted. Added alongside the rider/driver GUI without a version bump (lecture p.12 -- an optional field breaks no existing consumer).
+        autoComplete:
+          type: boolean
+          description: Testing/load-generation escape hatch -- skips straight to "completed" and fires trip.completed immediately, bypassing the accept/complete lifecycle. Used by chaos/chaos.js so bulk fault-injection runs don't need a simulated driver.
+
+    TripV1:
+      type: object
+      required: [id, origin, destination, fare, status]
+      properties:
+        id:
+          type: string
+        origin:
+          type: string
+        destination:
+          type: string
+        fare:
+          type: number
+          description: Semantic layer note -- "fare" is the price the rider pays, in the account's base currency. See docs/data-dictionary.md.
+        status:
+          type: string
+          enum: [requested, accepted, completed]
+          description: >
+            Widened from the original single value "completed" to the full
+            lifecycle enum when the rider/driver GUI shipped. This is the
+            lived example of a non-breaking change from
+            docs/dimensions/contract-and-versioning.md: a consumer validating
+            against the OLD two-value-looking contract (which only ever saw
+            "completed" in practice) is still validating a string against an
+            enum -- it only breaks if it hardcoded the single historical
+            value instead of treating status as an open set of strings.
+        riderId:
+          type: string
+          description: Optional, additive. Defaults to "anonymous".
+        driverId:
+          type: string
+          nullable: true
+          description: Optional, additive. Null until a driver accepts.
+        createdAt:
+          type: string
+          format: date-time
+        acceptedAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true

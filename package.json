@@ -1,0 +1,16 @@
+{
+  "name": "rideflow-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Host-side scripts for the RideFlow integration lab: fault injection (chaos.js) and contract testing.",
+  "scripts": {
+    "chaos": "node chaos/chaos.js",
+    "contract-test": "node docs/contracts/contract-test.js"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}

@@ -1,0 +1,64 @@
+asyncapi: "2.6.0"
+info:
+  title: RideFlow Events
+  version: "1.0.0"
+  description: >
+    Describes the two events that cross the RabbitMQ spine (lecture p.13:
+    AsyncAPI is to events what OpenAPI is to REST). Not validated at runtime
+    in this lab -- it's the documentation a new consumer would read before
+    writing a listener.
+
+channels:
+  trip.completed:
+    description: >
+      Published by trip-service via the outbox pattern once a trip is
+      recorded. At-least-once delivery -- consumers must be idempotent
+      (see payment-service's use of eventId).
+    publish:
+      message:
+        $ref: "#/components/messages/TripCompleted"
+
+  payment.completed:
+    description: Published by payment-service once a fraud-approved trip has been charged.
+    publish:
+      message:
+        $ref: "#/components/messages/PaymentCompleted"
+
+components:
+  messages:
+    TripCompleted:
+      name: TripCompleted
+      payload:
+        type: object
+        required: [eventId, tripId, fare, occurredAt]
+        properties:
+          eventId:
+            type: string
+            format: uuid
+            description: Unique per publish attempt -- NOT per trip. Used as the idempotency key.
+          tripId:
+            type: string
+            format: uuid
+          fare:
+            type: number
+          occurredAt:
+            type: string
+            format: date-time
+
+    PaymentCompleted:
+      name: PaymentCompleted
+      payload:
+        type: object
+        required: [eventId, tripId, fare, occurredAt]
+        properties:
+          eventId:
+            type: string
+            format: uuid
+          tripId:
+            type: string
+            format: uuid
+          fare:
+            type: number
+          occurredAt:
+            type: string
+            format: date-time

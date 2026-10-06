@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function () {
+  var l = localStorage.getItem("rideflow.lang") || "ar";
+  document.documentElement.lang = l;
+  document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+})();
+</script>
+<title>RideFlow — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="nav"></div>
+<div class="page">
+  <div class="page-header">
+    <h1 data-i18n="dash.title"></h1>
+    <p data-i18n-html="dash.subtitle"></p>
+    <div class="ts" id="ts" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="grid grid-cards" id="service-cards"></div>
+
+  <div class="page-header" style="margin-top:28px;">
+    <h2 data-i18n="dash.queues.heading"></h2>
+  </div>
+  <div class="card">
+    <table id="queue-table">
+      <thead><tr><th data-i18n="dash.table.queue"></th><th data-i18n="dash.table.depth"></th><th data-i18n="dash.table.consumers"></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<script src="/app.js"></script>
+<script src="/dashboard.js"></script>
+</body>
+</html>

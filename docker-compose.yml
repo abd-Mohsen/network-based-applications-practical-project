@@ -1,0 +1,108 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  trip-service:
+    build: ./services/trip-service
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      OUTBOX_ENABLED: "true"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  fraud-check-service:
+    build: ./services/fraud-check-service
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+
+  payment-service:
+    build: ./services/payment-service
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: 3003
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      FRAUD_CHECK_URL: http://fraud-check-service:3002
+      IDEMPOTENCY_ENABLED: "true"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      fraud-check-service:
+        condition: service_started
+
+  notification-service:
+    build: ./services/notification-service
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: 3004
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      WEBHOOK_SECRET: dev-secret
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  gateway:
+    build: ./services/gateway
+    ports:
+      - "3080:3000"
+    environment:
+      PORT: 3000
+      JWT_SECRET: dev-secret
+      TRIP_SERVICE_URL: http://trip-service:3001
+    depends_on:
+      - trip-service
+
+  monitor:
+    build: ./services/monitor
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      GATEWAY_URL: http://gateway:3000
+      TRIP_SERVICE_URL: http://trip-service:3001
+      FRAUD_CHECK_URL: http://fraud-check-service:3002
+      PAYMENT_SERVICE_URL: http://payment-service:3003
+      NOTIFICATION_SERVICE_URL: http://notification-service:3004
+      RABBITMQ_MGMT_URL: http://rabbitmq:15672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASS: guest
+    depends_on:
+      - trip-service
+      - payment-service
+      - notification-service
+      - gateway
+
+  web:
+    build: ./services/web
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      GATEWAY_URL: http://gateway:3000
+      TRIP_SERVICE_URL: http://trip-service:3001
+      PAYMENT_SERVICE_URL: http://payment-service:3003
+      NOTIFICATION_SERVICE_URL: http://notification-service:3004
+      FRAUD_CHECK_URL: http://fraud-check-service:3002
+      MONITOR_URL: http://monitor:4000
+    depends_on:
+      - gateway
+      - trip-service
+      - payment-service
+      - notification-service
+      - fraud-check-service
+      - monitor

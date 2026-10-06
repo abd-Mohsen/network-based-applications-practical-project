@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function () {
+  var l = localStorage.getItem("rideflow.lang") || "ar";
+  document.documentElement.lang = l;
+  document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+})();
+</script>
+<title>RideFlow — Control room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="nav"></div>
+<div class="page">
+  <div class="page-header">
+    <h1 data-i18n="control.title"></h1>
+    <p data-i18n-html="control.subtitle"></p>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h2 data-i18n="control.consumers.heading"></h2>
+      <p class="hint" data-i18n="control.consumers.hint"></p>
+      <div class="btn-row">
+        <button class="btn-secondary" data-action="pause-consumer" data-svc="payment" data-i18n="control.pausePayment"></button>
+        <button class="btn-secondary" data-action="resume-consumer" data-svc="payment" data-i18n="control.resumePayment"></button>
+      </div>
+      <div class="btn-row" style="margin-top:8px;">
+        <button class="btn-secondary" data-action="pause-consumer" data-svc="notification" data-i18n="control.pauseNotification"></button>
+        <button class="btn-secondary" data-action="resume-consumer" data-svc="notification" data-i18n="control.resumeNotification"></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="control.dup.heading"></h2>
+      <p class="hint" data-i18n="control.dup.hint"></p>
+      <div class="field"><label for="dup-n" data-i18n="control.label.count"></label><input id="dup-n" type="number" value="10" min="1" style="direction:ltr; text-align:right;"></div>
+      <button class="btn-primary btn-block" data-action="duplicate-next" data-i18n="control.dup.button"></button>
+    </div>
+
+    <div class="card">
+      <h2>fraud-check-service</h2>
+      <p class="hint" data-i18n="control.fraud.hint"></p>
+      <div class="btn-row">
+        <button class="btn-danger" data-action="kill-fraud" data-i18n="control.kill"></button>
+        <button class="btn-secondary" data-action="restore-fraud" data-i18n="control.restore"></button>
+      </div>
+      <div class="field" style="margin-top:12px;"><label for="latency-ms" data-i18n="control.label.latency"></label><input id="latency-ms" type="number" value="2000" min="0" style="direction:ltr; text-align:right;"></div>
+      <button class="btn-secondary btn-block" data-action="latency-fraud" data-i18n="control.setLatency"></button>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="control.load.heading"></h2>
+      <p class="hint" data-i18n-html="control.load.hint"></p>
+      <div class="field"><label for="gen-n" data-i18n="control.label.count"></label><input id="gen-n" type="number" value="10" min="1" style="direction:ltr; text-align:right;"></div>
+      <button class="btn-primary btn-block" data-action="generate-trips" data-i18n="control.generate"></button>
+    </div>
+  </div>
+
+  <div class="page-header" style="margin-top:28px;">
+    <h2 data-i18n="control.log.heading"></h2>
+  </div>
+  <div class="card"><div id="log"><div class="empty" data-i18n="control.log.empty"></div></div></div>
+</div>
+<script src="/app.js"></script>
+<script src="/control.js"></script>
+</body>
+</html>

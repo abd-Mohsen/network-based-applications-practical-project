@@ -1,0 +1,75 @@
+openapi: 3.0.3
+info:
+  title: Trip Service API
+  version: "2.0.0"
+  description: >
+    v2 as it was actually shipped -- NOT how it should have been shipped.
+    It renames "fare" to "price" in the response with no deprecation window
+    and no announcement (compare to docs/versioning-policy.md). This file
+    exists so contract-test.js can prove the break mechanically instead of
+    by inspection. See lecture p.12 ("كسر عقدٍ بلا إنذار").
+paths:
+  /v2/trips:
+    post:
+      summary: Create and complete a trip (breaking change -- "fare" renamed to "price")
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripRequest"
+      responses:
+        "201":
+          description: Trip created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripV2"
+  /v2/trips/{id}:
+    get:
+      summary: Read a trip
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Trip found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripV2"
+        "404":
+          description: Trip not found
+
+components:
+  schemas:
+    TripRequest:
+      type: object
+      required: [origin, destination, fare]
+      properties:
+        origin:
+          type: string
+        destination:
+          type: string
+        fare:
+          type: number
+
+    TripV2:
+      type: object
+      required: [id, origin, destination, price, status]
+      properties:
+        id:
+          type: string
+        origin:
+          type: string
+        destination:
+          type: string
+        price:
+          type: number
+          description: Renamed from "fare" -- this is the breaking change.
+        status:
+          type: string
+          enum: [completed]
