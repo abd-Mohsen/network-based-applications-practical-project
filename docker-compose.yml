@@ -1,4 +1,12 @@
 services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.60
+    ports:
+      - "16686:16686" # UI
+      - "4318:4318"   # OTLP HTTP (what every service exports traces to)
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     ports:
@@ -18,6 +26,8 @@ services:
       PORT: 3001
       RABBITMQ_URL: amqp://rabbitmq:5672
       OUTBOX_ENABLED: "true"
+      OTEL_SERVICE_NAME: trip-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -28,6 +38,8 @@ services:
       - "3002:3002"
     environment:
       PORT: 3002
+      OTEL_SERVICE_NAME: fraud-check-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
 
   payment-service:
     build: ./services/payment-service
@@ -38,6 +50,8 @@ services:
       RABBITMQ_URL: amqp://rabbitmq:5672
       FRAUD_CHECK_URL: http://fraud-check-service:3002
       IDEMPOTENCY_ENABLED: "true"
+      OTEL_SERVICE_NAME: payment-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -52,6 +66,8 @@ services:
       PORT: 3004
       RABBITMQ_URL: amqp://rabbitmq:5672
       WEBHOOK_SECRET: dev-secret
+      OTEL_SERVICE_NAME: notification-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -64,6 +80,8 @@ services:
       PORT: 3000
       JWT_SECRET: dev-secret
       TRIP_SERVICE_URL: http://trip-service:3001
+      OTEL_SERVICE_NAME: gateway
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     depends_on:
       - trip-service
 
@@ -99,6 +117,8 @@ services:
       NOTIFICATION_SERVICE_URL: http://notification-service:3004
       FRAUD_CHECK_URL: http://fraud-check-service:3002
       MONITOR_URL: http://monitor:4000
+      OTEL_SERVICE_NAME: web
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     depends_on:
       - gateway
       - trip-service
