@@ -13,6 +13,8 @@ window.RF = (function () {
       "nav.dashboard": "لوحة القيادة",
       "nav.control": "غرفة التحكم",
       "lang.toggle": "English",
+      "theme.toDark": "تفعيل الوضع الداكن",
+      "theme.toLight": "تفعيل الوضع الفاتح",
 
       "stage.requested": "مطلوبة",
       "stage.accepted": "مقبولة",
@@ -156,6 +158,8 @@ window.RF = (function () {
       "nav.dashboard": "Dashboard",
       "nav.control": "Control",
       "lang.toggle": "العربية",
+      "theme.toDark": "Switch to dark mode",
+      "theme.toLight": "Switch to light mode",
 
       "stage.requested": "Requested",
       "stage.accepted": "Accepted",
@@ -306,6 +310,34 @@ window.RF = (function () {
 
   RF.toggleLang = function () {
     RF.setLang(RF.lang() === "ar" ? "en" : "ar");
+  };
+
+  // --- theme (light/dark) -------------------------------------------------
+  // Unlike lang, this doesn't reload the page -- it's just a CSS variable
+  // swap via [data-theme], so there's no half-translated-style state to
+  // worry about. Falls back to the OS preference when the user hasn't
+  // picked one explicitly (see the inline <head> script, which applies the
+  // stored choice before first paint to avoid a flash).
+
+  RF.theme = function () {
+    const stored = localStorage.getItem("rideflow.theme");
+    if (stored === "dark" || stored === "light") return stored;
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  };
+
+  RF.setTheme = function (theme) {
+    localStorage.setItem("rideflow.theme", theme);
+    document.documentElement.setAttribute("data-theme", theme);
+    const btn = document.getElementById("theme-toggle");
+    if (btn) {
+      btn.textContent = theme === "dark" ? "☀️" : "🌙";
+      btn.title = theme === "dark" ? RF.t("theme.toLight") : RF.t("theme.toDark");
+      btn.setAttribute("aria-label", btn.title);
+    }
+  };
+
+  RF.toggleTheme = function () {
+    RF.setTheme(RF.theme() === "dark" ? "light" : "dark");
   };
 
   RF.t = function (key) {
@@ -609,10 +641,16 @@ window.RF = (function () {
         return '<a class="' + cls + '" href="' + it[0] + '">' + it[1] + "</a>";
       })
       .join("");
+    const dark = RF.theme() === "dark";
     return (
       '<nav class="nav"><a class="nav-brand" href="/"><span class="dot"></span>RideFlow</a>' +
       links +
       '<div class="nav-spacer"></div>' +
+      '<button type="button" class="theme-toggle" id="theme-toggle" onclick="RF.toggleTheme()" title="' +
+      (dark ? RF.t("theme.toLight") : RF.t("theme.toDark")) +
+      '" aria-label="' +
+      (dark ? RF.t("theme.toLight") : RF.t("theme.toDark")) +
+      '">' + (dark ? "☀️" : "🌙") + "</button>" +
       '<button type="button" class="lang-toggle" onclick="RF.toggleLang()">' + RF.t("lang.toggle") + "</button>" +
       '<div id="nav-id" class="nav-id"></div></nav>'
     );

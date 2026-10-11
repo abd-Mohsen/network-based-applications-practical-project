@@ -8,6 +8,8 @@
   var l = localStorage.getItem("rideflow.lang") || "ar";
   document.documentElement.lang = l;
   document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+  var t = localStorage.getItem("rideflow.theme");
+  if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
 })();
 </script>
 <title>RideFlow — Control room</title>
