@@ -1,11 +1,12 @@
 import express from "express";
 import path from "path";
+import http from "http";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 8080;
 
-const GATEWAY_URL = process.env.GATEWAY_URL || "http://gateway:3000";
+const GATEWAY_URL = process.env.GATEWAY_URL || "http://edge:80";
 const TRIP_SERVICE_URL = process.env.TRIP_SERVICE_URL || "http://trip-service:3001";
 const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || "http://payment-service:3003";
 const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || "http://notification-service:3004";
@@ -120,15 +121,37 @@ app.get("/events", (req, res) => {
   req.on("close", () => sseClients.delete(res));
 });
 
-// --- rider/driver writes -- through the gateway -----------------------------
+// --- rider/driver writes -- through the edge (Nginx) + gateway -------------
+// Each browser tab now holds its OWN JWT (see app.js's token panel, fetched
+// via /api/auth/token below and editable in the UI) and sends it as a normal
+// Authorization header on every write. This function is a pure pass-through
+// for that header -- it does NOT substitute the BFF's own service token --
+// so editing/breaking the token in the browser genuinely changes what the
+// gateway sees and genuinely gets that request rejected. getToken() (the
+// BFF's own cached service token) is still used, but only by the
+// control-room/chaos endpoints further down, which have no per-user token.
 async function proxyToGateway(req, res, method, gatewayPath) {
   try {
-    const token = await getToken();
+    const authHeader = req.headers.authorization;
+    const userId = req.body?.riderId || req.body?.driverId;
     const r = await fetch(`${GATEWAY_URL}${gatewayPath}`, {
       method,
-      headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+      headers: {
+        "content-type": "application/json",
+        ...(authHeader ? { authorization: authHeader } : {}),
+        ...(userId ? { "x-user-id": userId } : {}),
+      },
       body: method === "GET" ? undefined : JSON.stringify(req.body || {}),
     });
+    const contentType = r.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      // Edge (Nginx) or gateway is down/unreachable and returned its own
+      // HTML error page instead of JSON -- surface that plainly rather than
+      // forwarding an empty body.
+      return res.status(r.status || 502).json({
+        error: `gateway unreachable (HTTP ${r.status}) -- the API gateway or its edge proxy may be down`,
+      });
+    }
     const data = await r.json().catch(() => ({}));
     res.status(r.status).json(data);
   } catch (err) {
@@ -136,15 +159,86 @@ async function proxyToGateway(req, res, method, gatewayPath) {
   }
 }
 
+// Issues a fresh per-user JWT on demand -- backs the token panel's "New
+// token" button and the one-time fetch when a browser has none yet. Goes
+// through the gateway like everything else (this route isn't rate-limited
+// there, same as the BFF's own token fetch above).
+app.post("/api/auth/token", async (req, res) => {
+  try {
+    const r = await fetch(`${GATEWAY_URL}/auth/token`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ clientId: req.body?.clientId || "demo-client" }),
+    });
+    const data = await r.json().catch(() => ({}));
+    res.status(r.status).json(data);
+  } catch (err) {
+    res.status(502).json({ error: `token service unreachable: ${err.message}` });
+  }
+});
+
 app.post("/api/trips", (req, res) => proxyToGateway(req, res, "POST", "/trips"));
 app.post("/api/trips/:id/accept", (req, res) => proxyToGateway(req, res, "POST", `/trips/${req.params.id}/accept`));
 app.post("/api/trips/:id/complete", (req, res) => proxyToGateway(req, res, "POST", `/trips/${req.params.id}/complete`));
+app.post("/api/trips/:id/cancel", (req, res) => proxyToGateway(req, res, "POST", `/trips/${req.params.id}/cancel`));
 
 // --- control room -- mirrors chaos/chaos.js over HTTP -----------------------
 const chaosTargets = {
   payment: PAYMENT_SERVICE_URL,
   notification: NOTIFICATION_SERVICE_URL,
 };
+
+// --- gateway stop/start -- real container control, not a software toggle --
+// Every other chaos action above makes a service misbehave while it keeps
+// running. This one is different on purpose: to show Nginx's own 502/504 at
+// the edge (not a JSON error proxied through it), the gateway container has
+// to actually stop being reachable. That means talking to the Docker Engine
+// API over the socket mounted into this container (see docker-compose.yml)
+// -- no "docker" CLI binary needed, just plain HTTP over a Unix socket.
+function dockerRequest(method, apiPath) {
+  return new Promise((resolve, reject) => {
+    const req = http.request({ socketPath: "/var/run/docker.sock", path: apiPath, method }, (res) => {
+      let body = "";
+      res.on("data", (chunk) => (body += chunk));
+      res.on("end", () => resolve({ status: res.statusCode, body }));
+    });
+    req.on("error", reject);
+    req.end();
+  });
+}
+
+// Looked up by the compose-assigned label rather than a guessed container
+// name, so this works regardless of the compose project name.
+async function findGatewayContainerId() {
+  const filters = encodeURIComponent(JSON.stringify({ label: ["com.docker.compose.service=gateway"] }));
+  const { status, body } = await dockerRequest("GET", `/containers/json?all=1&filters=${filters}`);
+  if (status !== 200) throw new Error(`docker API error ${status}: ${body}`);
+  const containers = JSON.parse(body);
+  if (!containers.length) throw new Error('no container found for compose service "gateway"');
+  return containers[0].Id;
+}
+
+app.post("/api/chaos/stop-gateway", async (req, res) => {
+  try {
+    const id = await findGatewayContainerId();
+    const { status, body } = await dockerRequest("POST", `/containers/${id}/stop?t=0`);
+    if (status >= 400 && status !== 304) return res.status(502).json({ error: `docker stop failed (${status}): ${body}` });
+    res.json({ gateway: "stopped" });
+  } catch (err) {
+    res.status(502).json({ error: err.message });
+  }
+});
+
+app.post("/api/chaos/start-gateway", async (req, res) => {
+  try {
+    const id = await findGatewayContainerId();
+    const { status, body } = await dockerRequest("POST", `/containers/${id}/start`);
+    if (status >= 400 && status !== 304) return res.status(502).json({ error: `docker start failed (${status}): ${body}` });
+    res.json({ gateway: "started" });
+  } catch (err) {
+    res.status(502).json({ error: err.message });
+  }
+});
 
 app.post("/api/chaos/pause-consumer/:svc", async (req, res) => {
   const base = chaosTargets[req.params.svc];

@@ -15,7 +15,7 @@ trace the flow below.
 ## Architecture
 
 ```
-Rider GUI → gateway (JWT · rate limit) → trip-service (REST · OpenAPI · outbox)
+Rider GUI → edge (Nginx) → gateway (JWT · rate limit) → trip-service (REST · OpenAPI · outbox)
                                             requested ──/accept──▶ accepted ──/complete──▶ completed
                                                                                  │ publishes trip.completed
                                                                                  ▼
@@ -40,7 +40,8 @@ writes go back out through the gateway, same as any other client.
 | Service | Port | Role |
 |---|---|---|
 | `web` | **8080** | **Start here.** Rider + driver GUI, live dashboard, control room — see below |
-| `gateway` | 3080 (host) → 3000 (container) | API Gateway pattern: JWT issuance/verification, rate limiting, proxies `/trips*` → `trip-service`. Mapped off the usual 3000 because that port is already in use by another local project on this machine. |
+| `edge` | 3080 (host) → 80 (container) | Real Nginx reverse proxy in front of `gateway` — the literal "API Gateway (Nginx)" edge. Stock error pages left untouched: stop `gateway` and this returns Nginx's own 502, not a custom one. Also does connection-count limiting (`limit_conn`), independent of the gateway's per-user rate limit. |
+| `gateway` | internal only, 3000 (container) | JWT issuance/verification + per-user rate limiting (2 requests/minute/user), proxies `/trips*` → `trip-service`. No longer reachable directly from the host — everything goes through `edge` first, same as production. |
 | `trip-service` | 3001 | Contract-first REST (`/v1` with a real requested→accepted→completed lifecycle, frozen breaking `/v2`), Outbox pattern for crash-safe publishing |
 | `fraud-check-service` | 3002 | Flaky synchronous dependency — the circuit-breaker target |
 | `payment-service` | 3003 | Async consumer: idempotency key, retry+backoff, circuit breaker, DLQ routing |

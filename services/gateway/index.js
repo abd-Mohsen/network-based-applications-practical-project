@@ -35,12 +35,18 @@ function requireAuth(req, res, next) {
   }
 }
 
-// Fixed-window rate limiter per client -- the gateway's other job besides auth.
-const WINDOW_MS = 10000;
-const MAX_PER_WINDOW = 30;
+// Fixed-window rate limiter -- per INDIVIDUAL USER, not per API client.
+// Each rider/driver browser tab now holds its own JWT (clientId = that
+// person's riderId/driverId, see the token panel in app.js), so the
+// authenticated token's clientId IS the per-user identity -- that's the
+// primary key. "x-user-id" (forwarded by the BFF from the request body) and
+// req.ip are fallbacks for callers that don't carry a per-user token (e.g.
+// chaos/chaos.js's bulk load generation, which uses one shared client).
+const WINDOW_MS = 60_000;
+const MAX_PER_WINDOW = 2;
 const buckets = new Map();
 function rateLimit(req, res, next) {
-  const key = req.auth?.clientId || req.ip;
+  const key = req.auth?.clientId || req.headers["x-user-id"] || req.ip;
   const now = Date.now();
   const bucket = buckets.get(key) || { count: 0, resetAt: now + WINDOW_MS };
   if (now > bucket.resetAt) {
@@ -51,7 +57,14 @@ function rateLimit(req, res, next) {
   buckets.set(key, bucket);
   if (bucket.count > MAX_PER_WINDOW) {
     metrics.rateLimited++;
-    return res.status(429).json({ error: "rate limit exceeded" });
+    const retryAfterSeconds = Math.ceil((bucket.resetAt - now) / 1000);
+    res.set("Retry-After", String(retryAfterSeconds));
+    return res.status(429).json({
+      error: `Rate limit exceeded: max ${MAX_PER_WINDOW} requests per minute for this account. Try again in ${retryAfterSeconds}s.`,
+      limit: MAX_PER_WINDOW,
+      windowSeconds: WINDOW_MS / 1000,
+      retryAfterSeconds,
+    });
   }
   next();
 }

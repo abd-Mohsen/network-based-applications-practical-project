@@ -53,10 +53,14 @@
         return (
           '<div class="tile ' +
           tileClass(k, m[k]) +
+          '" title="' +
+          k +
           '"><div class="value">' +
           m[k] +
-          '</div><div class="key">' +
-          k +
+          '</div><div class="key' +
+          (RF.isKnownMetric(k) ? "" : " mono") +
+          '">' +
+          RF.escapeHtml(RF.metricLabel(k)) +
           "</div></div>"
         );
       })

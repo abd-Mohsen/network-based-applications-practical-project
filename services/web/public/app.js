@@ -20,6 +20,7 @@ window.RF = (function () {
       "stage.fraud": "فحص احتيال",
       "stage.paid": "مدفوعة",
       "stage.notified": "إشعار السائق",
+      "stage.cancelled": "أُلغيت",
 
       "time.now": "الآن",
       "time.secondsAgo": "منذ {n} ث",
@@ -36,10 +37,8 @@ window.RF = (function () {
       "rider.label.fare": "الأجرة",
       "rider.placeholder.origin": "ساحة الأمويين",
       "rider.placeholder.destination": "جامعة دمشق",
+      "rider.fare.autoHint": "تُقدَّر الأجرة تلقائياً حسب المسار — لا حاجة لإدخالها.",
       "rider.submit": "اطلب الرحلة",
-      "rider.howTo.heading": "كيف تُقرأ الجدول الزمني؟",
-      "rider.howTo.hint": "ست مراحل، كل واحدة تُضيئها خدمة مختلفة:",
-      "rider.howTo.footer": 'يجب أن يقبل سائقٌ رحلتك أولاً — افتح <a href="/driver">صفحة السائق</a> (يُفضَّل في تبويب آخر) لتحريكها.',
       "rider.myTrips.heading": "رحلاتي",
       "rider.connecting": "جارٍ الاتصال…",
       "rider.empty": "لا توجد رحلات بعد — اطلب واحدة أعلاه.",
@@ -47,6 +46,8 @@ window.RF = (function () {
       "rider.requestedAgo": "طُلبت",
       "rider.driverLabel": "السائق",
       "rider.error.default": "تعذّر طلب الرحلة",
+      "rider.cancel.button": "إلغاء",
+      "rider.error.cancel": "تعذّر إلغاء الرحلة",
 
       "driver.title": "طابور السائق",
       "driver.subtitle":
@@ -101,11 +102,53 @@ window.RF = (function () {
       "control.restore": "استعادة",
       "control.label.latency": "حقن تأخير (ملي ثانية)",
       "control.setLatency": "تعيين التأخير",
+      "control.gateway.heading": "بوّابة API (Nginx)",
+      "control.gateway.hint":
+        "إيقاف فعلي لحاوية gateway (ليس مجرد تعطيل برمجي) — edge (Nginx) يبقى يعمل ويُظهر صفحة خطأ Nginx الأصلية (502/504) عند أي طلب. أعِد تشغيلها للعودة للوضع الطبيعي.",
+      "control.gateway.stop": "إيقاف gateway",
+      "control.gateway.start": "تشغيل gateway",
+
       "control.load.heading": "توليد حمل",
       "control.load.hint": 'يُنشئ N رحلة عبر البوّابة مع <code>autoComplete: true</code> — تماماً مثل أمر <code>generate-trips</code> في الطرفية.',
       "control.generate": "توليد رحلات",
       "control.log.heading": "سجلّ النشاط",
       "control.log.empty": "لم يُنفَّذ شيء بعد.",
+
+      "metric.tokensIssued": "رموز أُصدرت",
+      "metric.requestsProxied": "طلبات مُمرَّرة",
+      "metric.authFailures": "فشل مصادقة",
+      "metric.rateLimited": "طلبات رُفضت (تحديد المعدّل)",
+      "metric.tripsCreated": "رحلات أُنشئت",
+      "metric.tripsAccepted": "رحلات قُبلت",
+      "metric.tripsCompleted": "رحلات اكتملت",
+      "metric.tripsCancelled": "رحلات أُلغيت",
+      "metric.outboxPublished": "أحداث نُشرت (outbox)",
+      "metric.publishFailedLost": "نشر فشل (حدث مفقود)",
+      "metric.chaosDuplicatesSent": "تكرارات فوضى أُرسلت",
+      "metric.outboxPending": "أحداث مُعلّقة (outbox)",
+      "metric.duplicateNextN": "تكرار الطلبات القادمة",
+      "metric.requests": "طلبات",
+      "metric.forcedFailures": "أعطال مفروضة (chaos)",
+      "metric.latencyMs": "تأخير مُحقَن (ملي ثانية)",
+      "metric.approved": "مقبولة",
+      "metric.declined": "مرفوضة",
+      "metric.consumed": "رسائل اُستُهلكت",
+      "metric.duplicatesDetected": "تكرارات اكتُشفت",
+      "metric.processed": "عُولجت",
+      "metric.failuresToDlq": "أُرسلت لطابور الموتى (DLQ)",
+      "metric.fraudCallFailures": "فشل نداء فحص الاحتيال",
+      "metric.breakerOpens": "مرّات انفتاح القاطع",
+      "metric.breakerShortCircuits": "دارات قصيرة (القاطع مفتوح)",
+      "metric.webhooksSent": "webhooks أُرسلت",
+      "metric.webhookSendFailures": "فشل إرسال webhook",
+      "metric.webhooksReceived": "webhooks استُلمت",
+      "metric.webhookSignatureFailures": "فشل توقيع webhook",
+
+      "token.heading": "رمز JWT",
+      "token.hint":
+        "هذا هو الرمز المُرسَل مع كل طلب كتابة عبر البوّابة. عدِّله يدوياً لتكسره عمداً وشاهد البوّابة ترفض الطلب التالي — أو اضغط «توليد رمز جديد» لاستعادة رمز صالح لهذا المستخدم.",
+      "token.reset.button": "توليد رمز جديد",
+      "token.invalid": "تعذّر فك تشفير الرمز — تنسيق غير صالح",
     },
     en: {
       "nav.rider": "Rider",
@@ -120,6 +163,7 @@ window.RF = (function () {
       "stage.fraud": "Fraud check",
       "stage.paid": "Paid",
       "stage.notified": "Notified",
+      "stage.cancelled": "Cancelled",
 
       "time.now": "just now",
       "time.secondsAgo": "{n}s ago",
@@ -136,10 +180,8 @@ window.RF = (function () {
       "rider.label.fare": "Fare",
       "rider.placeholder.origin": "Umayyad Square",
       "rider.placeholder.destination": "Damascus University",
+      "rider.fare.autoHint": "Fare is estimated automatically from the route — no need to enter one.",
       "rider.submit": "Request trip",
-      "rider.howTo.heading": "How to read the timeline",
-      "rider.howTo.hint": "Six stages, each lit by a different service:",
-      "rider.howTo.footer": 'A driver has to accept your trip first — open <a href="/driver">the driver page</a> (ideally in another tab) to move it along.',
       "rider.myTrips.heading": "My trips",
       "rider.connecting": "Connecting…",
       "rider.empty": "No trips yet — request one above.",
@@ -147,6 +189,8 @@ window.RF = (function () {
       "rider.requestedAgo": "requested",
       "rider.driverLabel": "driver",
       "rider.error.default": "could not request trip",
+      "rider.cancel.button": "Cancel",
+      "rider.error.cancel": "could not cancel trip",
 
       "driver.title": "Driver queue",
       "driver.subtitle":
@@ -201,11 +245,53 @@ window.RF = (function () {
       "control.restore": "Restore",
       "control.label.latency": "Inject latency (ms)",
       "control.setLatency": "Set latency",
+      "control.gateway.heading": "API Gateway (Nginx)",
+      "control.gateway.hint":
+        "A real stop of the gateway container (not a software toggle) — edge (Nginx) stays up and shows its own genuine error page (502/504) on the next request. Start it again to recover.",
+      "control.gateway.stop": "Stop gateway",
+      "control.gateway.start": "Start gateway",
+
       "control.load.heading": "Load generation",
       "control.load.hint": 'Creates N trips through the gateway with <code>autoComplete: true</code> — same as the CLI\'s <code>generate-trips</code>.',
       "control.generate": "Generate trips",
       "control.log.heading": "Activity log",
       "control.log.empty": "Nothing run yet.",
+
+      "metric.tokensIssued": "Tokens issued",
+      "metric.requestsProxied": "Requests proxied",
+      "metric.authFailures": "Auth failures",
+      "metric.rateLimited": "Rate limited",
+      "metric.tripsCreated": "Trips created",
+      "metric.tripsAccepted": "Trips accepted",
+      "metric.tripsCompleted": "Trips completed",
+      "metric.tripsCancelled": "Trips cancelled",
+      "metric.outboxPublished": "Outbox published",
+      "metric.publishFailedLost": "Publish failed (lost)",
+      "metric.chaosDuplicatesSent": "Chaos duplicates sent",
+      "metric.outboxPending": "Outbox pending",
+      "metric.duplicateNextN": "Duplicate next N",
+      "metric.requests": "Requests",
+      "metric.forcedFailures": "Forced failures",
+      "metric.latencyMs": "Injected latency (ms)",
+      "metric.approved": "Approved",
+      "metric.declined": "Declined",
+      "metric.consumed": "Consumed",
+      "metric.duplicatesDetected": "Duplicates detected",
+      "metric.processed": "Processed",
+      "metric.failuresToDlq": "Failures to DLQ",
+      "metric.fraudCallFailures": "Fraud-check call failures",
+      "metric.breakerOpens": "Breaker opens",
+      "metric.breakerShortCircuits": "Breaker short-circuits",
+      "metric.webhooksSent": "Webhooks sent",
+      "metric.webhookSendFailures": "Webhook send failures",
+      "metric.webhooksReceived": "Webhooks received",
+      "metric.webhookSignatureFailures": "Webhook signature failures",
+
+      "token.heading": "JWT token",
+      "token.hint":
+        'This is the token sent with every write through the gateway. Edit it to break it on purpose and watch the gateway reject the next request — or click "New token" to get a fresh, valid one for this user.',
+      "token.reset.button": "New token",
+      "token.invalid": "could not decode token — invalid format",
     },
   };
 
@@ -225,6 +311,18 @@ window.RF = (function () {
   RF.t = function (key) {
     const dict = RF.STRINGS[RF.lang()] || RF.STRINGS.ar;
     return dict[key] || RF.STRINGS.ar[key] || key;
+  };
+
+  // Dashboard /metrics field names (tripsCreated, breakerOpens, ...) are
+  // literal API identifiers -- translate the ones we know about for display,
+  // but fall back to showing the raw identifier (untranslated, monospace)
+  // for anything not yet in the dictionary, so a new metric never just
+  // disappears or prints a raw "metric.xyz" key.
+  RF.isKnownMetric = function (key) {
+    return Boolean(RF.STRINGS.en["metric." + key] || RF.STRINGS.ar["metric." + key]);
+  };
+  RF.metricLabel = function (key) {
+    return RF.isKnownMetric(key) ? RF.t("metric." + key) : key;
   };
 
   // Applies document direction/lang immediately (call this first, before
@@ -266,22 +364,156 @@ window.RF = (function () {
     return es;
   };
 
-  RF.postJSON = async function (url, body) {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body || {}),
-    });
-    const data = await res.json().catch(function () {
-      return {};
-    });
-    if (!res.ok) {
-      const err = new Error(data.error || res.statusText);
-      err.status = res.status;
-      err.data = data;
-      throw err;
+  // --- global "please wait" cursor ----------------------------------------
+  // Some requests (stop/start the gateway container, for instance) take real
+  // seconds, not milliseconds -- a disabled button alone doesn't make that
+  // obvious. Counter-based so overlapping in-flight requests (e.g. a trip
+  // write plus a background token fetch) don't prematurely clear it.
+  let busyCount = 0;
+  function beginBusy() {
+    busyCount++;
+    document.documentElement.classList.add("rf-busy");
+  }
+  function endBusy() {
+    busyCount = Math.max(0, busyCount - 1);
+    if (busyCount === 0) document.documentElement.classList.remove("rf-busy");
+  }
+
+  // --- per-user JWT (token panel on rider/driver pages) -------------------
+  // Each browser tab gets its own token (clientId = that tab's riderId/
+  // driverId), fetched once and then left alone -- see RF.ensureToken.
+
+  RF.fetchNewToken = async function (clientId) {
+    beginBusy();
+    try {
+      const res = await fetch("/api/auth/token", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ clientId }),
+      });
+      const data = await res.json().catch(function () {
+        return {};
+      });
+      if (!res.ok || !data.token) throw new Error(data.error || "token request failed");
+      return data.token;
+    } finally {
+      endBusy();
     }
-    return data;
+  };
+
+  // Reuses whatever is already in storage -- including a value the user
+  // broke by hand -- rather than silently fetching a fresh (valid) one on
+  // every page load, which would undo the point of editing it.
+  RF.ensureToken = async function (storageKey, clientId) {
+    const existing = localStorage.getItem(storageKey);
+    if (existing) return existing;
+    const token = await RF.fetchNewToken(clientId);
+    localStorage.setItem(storageKey, token);
+    return token;
+  };
+
+  // Decodes the JWT payload for display only -- no signature check, this is
+  // just so the panel can show clientId/scope/exp. Returns null on anything
+  // that isn't a well-formed three-part token (e.g. a hand-edited one).
+  RF.decodeJwtClaims = function (token) {
+    try {
+      const parts = String(token).split(".");
+      if (parts.length !== 3) return null;
+      const json = decodeURIComponent(
+        atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+      return JSON.parse(json);
+    } catch (err) {
+      return null;
+    }
+  };
+
+  // Renders an editable token panel into `container`. Typing in it saves
+  // immediately (that's what makes "edit it, then submit" actually break the
+  // next request), and the reset button fetches a brand-new valid token.
+  RF.renderTokenPanel = function (container, storageKey, clientId) {
+    container.innerHTML =
+      '<h2>' +
+      RF.t("token.heading") +
+      '</h2>' +
+      '<p class="hint">' +
+      RF.t("token.hint") +
+      '</p>' +
+      '<textarea id="token-input" class="mono" rows="3" spellcheck="false" ' +
+      'style="width:100%; resize:vertical; font-size:11px; padding:9px 11px; border:1px solid var(--rule); border-radius:8px; background:var(--bg); color:var(--ink); direction:ltr;"></textarea>' +
+      '<div class="btn-row" style="margin-top:10px;">' +
+      '<button type="button" class="btn-secondary" id="token-reset">' +
+      RF.t("token.reset.button") +
+      "</button>" +
+      "</div>" +
+      '<div id="token-claims" class="hint mono" style="margin-top:10px; margin-bottom:0; direction:ltr; white-space:pre-wrap;"></div>';
+
+    const textarea = container.querySelector("#token-input");
+    const claimsEl = container.querySelector("#token-claims");
+    const resetBtn = container.querySelector("#token-reset");
+
+    function renderClaims(token) {
+      const claims = RF.decodeJwtClaims(token);
+      claimsEl.textContent = claims
+        ? "clientId=" + claims.clientId + "  scope=" + claims.scope + "  exp=" + new Date(claims.exp * 1000).toLocaleTimeString()
+        : RF.t("token.invalid");
+    }
+
+    function load() {
+      const t = localStorage.getItem(storageKey) || "";
+      textarea.value = t;
+      renderClaims(t);
+    }
+    load();
+
+    textarea.addEventListener("input", function () {
+      const v = textarea.value.trim();
+      localStorage.setItem(storageKey, v);
+      renderClaims(v);
+    });
+
+    resetBtn.addEventListener("click", async function () {
+      resetBtn.disabled = true;
+      try {
+        const token = await RF.fetchNewToken(clientId);
+        localStorage.setItem(storageKey, token);
+        load();
+      } catch (err) {
+        alert(err.message || "could not get a new token");
+      } finally {
+        resetBtn.disabled = false;
+      }
+    });
+  };
+
+  RF.postJSON = async function (url, body, token) {
+    beginBusy();
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: token
+          ? { "content-type": "application/json", authorization: "Bearer " + token }
+          : { "content-type": "application/json" },
+        body: JSON.stringify(body || {}),
+      });
+      const data = await res.json().catch(function () {
+        return {};
+      });
+      if (!res.ok) {
+        const err = new Error(data.error || res.statusText);
+        err.status = res.status;
+        err.data = data;
+        throw err;
+      }
+      return data;
+    } finally {
+      endBusy();
+    }
   };
 
   RF.timeAgo = function (iso) {
@@ -309,6 +541,16 @@ window.RF = (function () {
   RF.stepperHtml = function (trip) {
     const payment = trip.timeline && trip.timeline.payment;
     const notification = trip.timeline && trip.timeline.notification;
+
+    if (trip.status === "cancelled") {
+      return (
+        '<div class="step done"><div class="node"></div><div class="label">' +
+        RF.t("stage.requested") +
+        '</div></div><div class="step-line"></div><div class="step declined"><div class="node"></div><div class="label">' +
+        RF.t("stage.cancelled") +
+        "</div></div>"
+      );
+    }
 
     const stages = [
       { label: RF.t("stage.requested"), done: true },
@@ -348,6 +590,7 @@ window.RF = (function () {
       requested: ["pill-gray", "stage.requested"],
       accepted: ["pill-sync", "stage.accepted"],
       completed: ["pill-accent", "stage.completed"],
+      cancelled: ["pill-gray", "stage.cancelled"],
     };
     const entry = map[status] || ["pill-gray", null];
     return '<span class="pill ' + entry[0] + '">' + (entry[1] ? RF.t(entry[1]) : status) + "</span>";

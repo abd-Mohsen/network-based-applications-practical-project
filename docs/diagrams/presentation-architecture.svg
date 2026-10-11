@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1760 950" width="1760" height="950">
+  <rect x="0" y="0" width="1760" height="950" fill="#F7F6F2"/>
+
+  <defs>
+    <marker id="arrow-async" viewBox="0 0 10 8" markerWidth="9" markerHeight="7" refX="8" refY="4" orient="auto-start-reverse">
+      <polygon points="0,0 9,3.5 0,7" fill="#0E7C86"/>
+    </marker>
+    <marker id="arrow-sync" viewBox="0 0 10 8" markerWidth="9" markerHeight="7" refX="8" refY="4" orient="auto-start-reverse">
+      <polygon points="0,0 9,3.5 0,7" fill="#6B4FA0"/>
+    </marker>
+    <marker id="arrow-fail" viewBox="0 0 10 8" markerWidth="9" markerHeight="7" refX="8" refY="4" orient="auto-start-reverse">
+      <polygon points="0,0 9,3.5 0,7" fill="#B3730A"/>
+    </marker>
+    <marker id="arrow-neutral" viewBox="0 0 10 8" markerWidth="9" markerHeight="7" refX="8" refY="4" orient="auto-start-reverse">
+      <polygon points="0,0 9,3.5 0,7" fill="#70788A"/>
+    </marker>
+  </defs>
+
+  <!-- title -->
+  <text x="40" y="34" font-family="DejaVu Sans, sans-serif" font-weight="bold" font-size="20" fill="#1C2127">RideFlow — presentation architecture</text>
+  <text x="40" y="54" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#646E7A">clients → edge (Nginx) → gateway (JWT · rate limit) → services, plus the SSE push vs. webhook distinction — see legend bottom-left</text>
+
+  <!-- ========================= CLIENTS ========================= -->
+  <rect x="40" y="90" width="200" height="56" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="140" y="113" font-family="DejaVu Sans, sans-serif" font-weight="bold" font-size="13.5" fill="#1C2127" text-anchor="middle">Rider browser tab</text>
+  <text x="140" y="130" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A" text-anchor="middle">localStorage riderId · /</text>
+
+  <rect x="280" y="90" width="200" height="56" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="380" y="113" font-family="DejaVu Sans, sans-serif" font-weight="bold" font-size="13.5" fill="#1C2127" text-anchor="middle">Driver browser tab</text>
+  <text x="380" y="130" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A" text-anchor="middle">localStorage driverId · /driver</text>
+
+  <!-- rider <-> web -->
+  <line x1="100" y1="146" x2="195" y2="230" stroke="#70788A" stroke-width="2.2" marker-end="url(#arrow-neutral)"/>
+  <text x="70" y="190" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A">POST /api/trips</text>
+  <text x="70" y="203" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A">(+cancel)</text>
+
+  <line x1="225" y1="230" x2="150" y2="146" stroke="#0E7C86" stroke-width="2.4" stroke-dasharray="1 6" stroke-linecap="round" marker-end="url(#arrow-async)"/>
+  <text x="195" y="195" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#0E7C86" font-weight="bold">SSE</text>
+  <text x="195" y="208" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A">GET /events</text>
+
+  <!-- driver <-> web -->
+  <line x1="340" y1="146" x2="310" y2="230" stroke="#70788A" stroke-width="2.2" marker-end="url(#arrow-neutral)"/>
+  <text x="330" y="190" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A" text-anchor="middle">accept / complete</text>
+
+  <line x1="345" y1="230" x2="415" y2="146" stroke="#0E7C86" stroke-width="2.4" stroke-dasharray="1 6" stroke-linecap="round" marker-end="url(#arrow-async)"/>
+  <text x="400" y="200" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#0E7C86" font-weight="bold" text-anchor="middle">SSE push</text>
+  <text x="400" y="213" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A" text-anchor="middle">(new ride appears here, ~1s)</text>
+
+  <!-- ========================= WEB BFF ========================= -->
+  <rect x="130" y="230" width="260" height="56" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="260" y="253" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="13.5" fill="#1C2127" text-anchor="middle">web (GUI + BFF)</text>
+  <text x="260" y="269" font-family="DejaVu Sans, sans-serif" font-size="10" fill="#646E7A" text-anchor="middle">:8080 · one SSE stream, broadcast to every tab</text>
+  <text x="260" y="281" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">reads: polls trip/payment/notification/monitor directly (1s)</text>
+
+  <!-- web -> edge -->
+  <line x1="260" y1="286" x2="225" y2="340" stroke="#70788A" stroke-width="2.5" marker-end="url(#arrow-neutral)"/>
+  <text x="80" y="320" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A">writes only — one path,</text>
+  <text x="80" y="333" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A">adds x-user-id header</text>
+
+  <!-- ========================= EDGE / GATEWAY / TRIP ========================= -->
+  <rect x="130" y="340" width="190" height="64" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="225" y="363" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="13.5" fill="#1C2127" text-anchor="middle">edge (Nginx)</text>
+  <text x="225" y="379" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">:3080→:80, the real</text>
+  <text x="225" y="392" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">"API Gateway (Nginx)" edge</text>
+
+  <line x1="320" y1="372" x2="370" y2="372" stroke="#70788A" stroke-width="2.5" marker-end="url(#arrow-neutral)"/>
+  <text x="345" y="358" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">reverse</text>
+  <text x="345" y="406" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">proxy</text>
+
+  <rect x="370" y="340" width="190" height="64" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="465" y="363" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="13.5" fill="#1C2127" text-anchor="middle">gateway</text>
+  <text x="465" y="379" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">JWT issue/verify</text>
+  <text x="465" y="392" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">2 req/min per user</text>
+
+  <line x1="560" y1="372" x2="610" y2="372" stroke="#70788A" stroke-width="2.5" marker-end="url(#arrow-neutral)"/>
+  <text x="585" y="358" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">proxy</text>
+  <text x="585" y="406" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">/trips*</text>
+
+  <rect x="610" y="340" width="200" height="64" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="710" y="363" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="13.5" fill="#1C2127" text-anchor="middle">trip-service</text>
+  <text x="710" y="379" font-family="DejaVu Sans Mono, monospace" font-size="9" fill="#0E7C86" text-anchor="middle">requested→accepted→completed</text>
+  <text x="710" y="392" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">predicts fare · outbox pattern</text>
+
+  <!-- stock-error-page note under edge -->
+  <text x="225" y="425" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#B3730A" text-anchor="middle">stop gateway → Nginx's own</text>
+  <text x="225" y="438" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#B3730A" text-anchor="middle">stock 502/504, unmodified</text>
+
+  <!-- trip-service -> Q1 -->
+  <line x1="710" y1="404" x2="710" y2="500" stroke="#0E7C86" stroke-width="2.5" marker-end="url(#arrow-async)"/>
+  <text x="722" y="445" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A">publish on /complete</text>
+  <text x="722" y="458" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A">(outbox — crash-safe)</text>
+
+  <!-- ========================= ASYNC SPINE ========================= -->
+  <rect x="610" y="500" width="200" height="56" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="710" y="522" font-family="DejaVu Sans, sans-serif" font-size="11" fill="#646E7A" text-anchor="middle">RabbitMQ queue</text>
+  <text x="710" y="540" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="12.5" fill="#0E7C86" text-anchor="middle">trip.completed</text>
+
+  <line x1="810" y1="532" x2="900" y2="532" stroke="#0E7C86" stroke-width="2.5" marker-end="url(#arrow-async)"/>
+  <text x="855" y="520" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A" text-anchor="middle">consume</text>
+
+  <line x1="710" y1="556" x2="710" y2="650" stroke="#B3730A" stroke-width="2.2" stroke-dasharray="6 4" marker-end="url(#arrow-fail)"/>
+  <text x="722" y="595" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#B3730A">retries</text>
+  <text x="722" y="608" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#B3730A">exhausted</text>
+
+  <rect x="610" y="650" width="200" height="48" rx="8" fill="#F7F6F2" stroke="#3A4654" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="710" y="670" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A" text-anchor="middle">dead-letter queue</text>
+  <text x="710" y="687" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="11.5" fill="#B3730A" text-anchor="middle">trip.completed.dlq</text>
+
+  <rect x="900" y="500" width="200" height="56" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="1000" y="522" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="13.5" fill="#1C2127" text-anchor="middle">payment-service</text>
+  <text x="1000" y="540" font-family="DejaVu Sans, sans-serif" font-size="10" fill="#646E7A" text-anchor="middle">idempotency · retry · breaker</text>
+
+  <!-- payment <-> fraud -->
+  <line x1="1000" y1="556" x2="1000" y2="650" stroke="#6B4FA0" stroke-width="2.5" marker-start="url(#arrow-sync)" marker-end="url(#arrow-sync)"/>
+  <text x="1012" y="590" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A">sync REST check ·</text>
+  <text x="1012" y="603" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A">retry + circuit breaker</text>
+
+  <rect x="900" y="650" width="200" height="56" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="1000" y="673" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="13" fill="#1C2127" text-anchor="middle">fraud-check-service</text>
+  <text x="1000" y="690" font-family="DejaVu Sans, sans-serif" font-size="10" fill="#646E7A" text-anchor="middle">flaky · chaos-toggleable</text>
+
+  <line x1="1100" y1="532" x2="1190" y2="532" stroke="#0E7C86" stroke-width="2.5" marker-end="url(#arrow-async)"/>
+  <text x="1145" y="520" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A" text-anchor="middle">publish</text>
+
+  <rect x="1190" y="500" width="200" height="56" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="1290" y="522" font-family="DejaVu Sans, sans-serif" font-size="11" fill="#646E7A" text-anchor="middle">RabbitMQ queue</text>
+  <text x="1290" y="540" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="12.5" fill="#0E7C86" text-anchor="middle">payment.completed</text>
+
+  <line x1="1390" y1="532" x2="1480" y2="532" stroke="#0E7C86" stroke-width="2.5" marker-end="url(#arrow-async)"/>
+  <text x="1435" y="520" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#646E7A" text-anchor="middle">consume</text>
+
+  <rect x="1480" y="500" width="200" height="56" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="1580" y="522" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="13" fill="#1C2127" text-anchor="middle">notification-service</text>
+  <text x="1580" y="540" font-family="DejaVu Sans, sans-serif" font-size="10" fill="#646E7A" text-anchor="middle">signs + sends webhook</text>
+
+  <line x1="1580" y1="556" x2="1580" y2="650" stroke="#B3730A" stroke-width="2.2" stroke-dasharray="9 3 2 3" marker-end="url(#arrow-fail)"/>
+  <text x="1592" y="590" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#B3730A">HMAC-signed webhook</text>
+  <text x="1592" y="603" font-family="DejaVu Sans, sans-serif" font-size="10.5" fill="#B3730A">service-to-service ONLY</text>
+
+  <rect x="1480" y="650" width="200" height="56" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.5"/>
+  <text x="1580" y="672" font-family="DejaVu Sans, sans-serif" font-size="12" fill="#1C2127" text-anchor="middle">Driver app (mock)</text>
+  <text x="1580" y="689" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">NOT the browser tab above</text>
+
+  <!-- ========================= OBSERVABILITY NOTES ========================= -->
+  <rect x="370" y="760" width="260" height="56" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="500" y="780" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="12.5" fill="#1C2127" text-anchor="middle">monitor :4000</text>
+  <text x="500" y="796" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">polls every /metrics + RabbitMQ</text>
+  <text x="500" y="808" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">mgmt API every 2s → /dashboard</text>
+
+  <rect x="650" y="760" width="260" height="56" rx="10" fill="#FFFFFF" stroke="#3A4654" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="780" y="780" font-family="DejaVu Sans Mono, monospace" font-weight="bold" font-size="12.5" fill="#1C2127" text-anchor="middle">jaeger :16686</text>
+  <text x="780" y="796" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">every service exports traces</text>
+  <text x="780" y="808" font-family="DejaVu Sans, sans-serif" font-size="9.5" fill="#646E7A" text-anchor="middle">via OTLP — see one request's hops</text>
+
+  <!-- ========================= LEGEND ========================= -->
+  <line x1="40" y1="860" x2="62" y2="860" stroke="#0E7C86" stroke-width="3"/>
+  <text x="68" y="864" font-family="DejaVu Sans, sans-serif" font-size="12" fill="#1C2127">async · queue-mediated</text>
+
+  <line x1="270" y1="860" x2="292" y2="860" stroke="#6B4FA0" stroke-width="3"/>
+  <text x="298" y="864" font-family="DejaVu Sans, sans-serif" font-size="12" fill="#1C2127">sync · request/response (REST)</text>
+
+  <line x1="560" y1="860" x2="582" y2="860" stroke="#B3730A" stroke-width="3" stroke-dasharray="5 3"/>
+  <text x="588" y="864" font-family="DejaVu Sans, sans-serif" font-size="12" fill="#1C2127">failure path · dead-letter</text>
+
+  <line x1="40" y1="890" x2="62" y2="890" stroke="#B3730A" stroke-width="3" stroke-dasharray="9 3 2 3"/>
+  <text x="68" y="894" font-family="DejaVu Sans, sans-serif" font-size="12" fill="#1C2127">signed webhook · service-to-service only</text>
+
+  <line x1="400" y1="890" x2="422" y2="890" stroke="#70788A" stroke-width="3"/>
+  <text x="428" y="894" font-family="DejaVu Sans, sans-serif" font-size="12" fill="#1C2127">writes / reverse proxy path</text>
+
+  <line x1="680" y1="890" x2="702" y2="890" stroke="#0E7C86" stroke-width="2.4" stroke-dasharray="1 6" stroke-linecap="round"/>
+  <text x="708" y="894" font-family="DejaVu Sans, sans-serif" font-size="12" fill="#0E7C86" font-weight="bold">SSE push</text>
+  <text x="782" y="894" font-family="DejaVu Sans, sans-serif" font-size="12" fill="#1C2127">— server→browser, one-way, updates the driver tab live</text>
+
+  <text x="40" y="930" font-family="DejaVu Sans, sans-serif" font-size="11" fill="#646E7A">No WebSocket is used anywhere in this system — live updates are SSE (one-way push); the only "webhook" is notification-service → mock driver endpoint, server-to-server.</text>
+</svg>

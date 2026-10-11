@@ -28,12 +28,8 @@
       <h2 data-i18n="control.consumers.heading"></h2>
       <p class="hint" data-i18n="control.consumers.hint"></p>
       <div class="btn-row">
-        <button class="btn-secondary" data-action="pause-consumer" data-svc="payment" data-i18n="control.pausePayment"></button>
-        <button class="btn-secondary" data-action="resume-consumer" data-svc="payment" data-i18n="control.resumePayment"></button>
-      </div>
-      <div class="btn-row" style="margin-top:8px;">
-        <button class="btn-secondary" data-action="pause-consumer" data-svc="notification" data-i18n="control.pauseNotification"></button>
-        <button class="btn-secondary" data-action="resume-consumer" data-svc="notification" data-i18n="control.resumeNotification"></button>
+        <button type="button" class="btn-secondary" data-toggle-consumer="payment" disabled data-i18n="rider.connecting"></button>
+        <button type="button" class="btn-secondary" data-toggle-consumer="notification" disabled data-i18n="rider.connecting"></button>
       </div>
     </div>
 
@@ -48,11 +44,18 @@
       <h2>fraud-check-service</h2>
       <p class="hint" data-i18n="control.fraud.hint"></p>
       <div class="btn-row">
-        <button class="btn-danger" data-action="kill-fraud" data-i18n="control.kill"></button>
-        <button class="btn-secondary" data-action="restore-fraud" data-i18n="control.restore"></button>
+        <button type="button" class="btn-secondary" data-toggle-fraud disabled data-i18n="rider.connecting"></button>
       </div>
       <div class="field" style="margin-top:12px;"><label for="latency-ms" data-i18n="control.label.latency"></label><input id="latency-ms" type="number" value="2000" min="0" style="direction:ltr; text-align:right;"></div>
       <button class="btn-secondary btn-block" data-action="latency-fraud" data-i18n="control.setLatency"></button>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="control.gateway.heading"></h2>
+      <p class="hint" data-i18n="control.gateway.hint"></p>
+      <div class="btn-row">
+        <button type="button" class="btn-secondary" data-toggle-gateway disabled data-i18n="rider.connecting"></button>
+      </div>
     </div>
 
     <div class="card">

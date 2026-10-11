@@ -74,8 +74,6 @@ services:
 
   gateway:
     build: ./services/gateway
-    ports:
-      - "3080:3000"
     environment:
       PORT: 3000
       JWT_SECRET: dev-secret
@@ -84,6 +82,13 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     depends_on:
       - trip-service
+
+  edge:
+    build: ./services/edge
+    ports:
+      - "3080:80"
+    depends_on:
+      - gateway
 
   monitor:
     build: ./services/monitor
@@ -109,9 +114,16 @@ services:
     build: ./services/web
     ports:
       - "8080:8080"
+    # Lets the control room's "Stop/Start gateway" buttons actually stop and
+    # start the gateway container (Docker Engine API over the socket) --
+    # that's what produces a genuine Nginx 502/504 at the edge, not a
+    # software pretend-outage. Dev/demo-only: this gives the web container
+    # host-level Docker control, which is NOT something you'd ship as-is.
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       PORT: 8080
-      GATEWAY_URL: http://gateway:3000
+      GATEWAY_URL: http://edge:80
       TRIP_SERVICE_URL: http://trip-service:3001
       PAYMENT_SERVICE_URL: http://payment-service:3003
       NOTIFICATION_SERVICE_URL: http://notification-service:3004
@@ -120,7 +132,7 @@ services:
       OTEL_SERVICE_NAME: web
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     depends_on:
-      - gateway
+      - edge
       - trip-service
       - payment-service
       - notification-service

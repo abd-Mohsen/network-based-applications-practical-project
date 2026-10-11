@@ -32,16 +32,41 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 `);
+// Added after the original schema -- older data files won't have this
+// column yet, so add it defensively and ignore the "duplicate column" error
+// on every later boot once it's already there.
+try {
+  db.exec("ALTER TABLE trips ADD COLUMN cancelled_at TEXT");
+} catch {
+  // already present
+}
 
 const metrics = {
   tripsCreated: 0,
   tripsAccepted: 0,
   tripsCompleted: 0,
+  tripsCancelled: 0,
   outboxPublished: 0,
   publishFailedLost: 0,
   chaosDuplicatesSent: 0,
   outboxEnabled: OUTBOX_ENABLED,
 };
+
+// Riders no longer type a fare -- it's predicted here from the route, the
+// one place in the system that owns trip data. Deterministic per
+// origin/destination pair (same route quotes the same fare, like a real
+// estimator) with a bit of jitter so repeated requests aren't identical to
+// the cent.
+function estimateFare(origin, destination) {
+  const route = `${origin}|${destination}`;
+  let hash = 0;
+  for (let i = 0; i < route.length; i++) {
+    hash = (hash * 31 + route.charCodeAt(i)) >>> 0;
+  }
+  const base = 5 + (hash % 35); // $5-$40 band, stable per route
+  const jitter = (hash % 100) / 100; // +$0.00-$0.99
+  return Math.round((base + jitter) * 2) / 2; // nearest $0.50
+}
 
 let channel = null;
 let duplicateNextN = 0;
@@ -194,6 +219,7 @@ function toV1Response(row) {
     createdAt: row.created_at,
     acceptedAt: row.accepted_at,
     completedAt: row.completed_at,
+    cancelledAt: row.cancelled_at ?? null,
   };
 }
 
@@ -203,10 +229,15 @@ app.use(express.json());
 // v1: full lifecycle, contract field is "fare" -----------------------------
 
 app.post("/v1/trips", (req, res) => {
-  const { origin, destination, fare, riderId, autoComplete } = req.body || {};
-  if (!origin || !destination || typeof fare !== "number") {
-    return res.status(400).json({ error: "origin, destination and numeric fare are required" });
+  const { origin, destination, riderId, autoComplete } = req.body || {};
+  if (!origin || !destination) {
+    return res.status(400).json({ error: "origin and destination are required" });
   }
+  // fare is optional on purpose -- the rider GUI no longer sends one and gets
+  // a predicted fare back; chaos/chaos.js and the v2 contract still pass an
+  // explicit fare and that's honored as-is.
+  const { fare: suppliedFare } = req.body || {};
+  const fare = typeof suppliedFare === "number" ? suppliedFare : estimateFare(origin, destination);
   const trip = insertTrip({ origin, destination, fare, riderId, autoComplete: autoComplete === true });
   res.status(201).json(toV1Response(trip));
 });
@@ -254,6 +285,21 @@ app.post("/v1/trips/:id/accept", (req, res) => {
   );
   metrics.tripsAccepted++;
   res.json(toV1Response({ ...trip, status: "accepted", driver_id: driverId, accepted_at: now }));
+});
+
+// Cancel is only allowed while a trip is still unmatched -- once a driver
+// has accepted it there's a real person already en route, so that's a
+// different (unimplemented) flow, not a plain cancel.
+app.post("/v1/trips/:id/cancel", (req, res) => {
+  const trip = db.prepare("SELECT * FROM trips WHERE id = ?").get(req.params.id);
+  if (!trip) return res.status(404).json({ error: "trip not found" });
+  if (trip.status !== "requested") {
+    return res.status(409).json({ error: `trip is "${trip.status}", cannot cancel (already accepted or completed)` });
+  }
+  const now = new Date().toISOString();
+  db.prepare("UPDATE trips SET status = 'cancelled', cancelled_at = ? WHERE id = ?").run(now, trip.id);
+  metrics.tripsCancelled++;
+  res.json(toV1Response({ ...trip, status: "cancelled", cancelled_at: now }));
 });
 
 app.post("/v1/trips/:id/complete", (req, res) => {

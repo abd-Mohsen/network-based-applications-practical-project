@@ -1,8 +1,15 @@
 (function () {
   const driverId = RF.getOrCreateId("rideflow.driverId", "driver");
+  const TOKEN_KEY = "rideflow.driverToken";
 
   document.getElementById("nav").innerHTML = RF.navHtml("/driver");
   document.getElementById("nav-id").innerHTML = RF.t("driver.drivingAs") + ' <span class="mono">' + driverId + "</span>";
+
+  RF.ensureToken(TOKEN_KEY, driverId)
+    .catch(function () {})
+    .finally(function () {
+      RF.renderTokenPanel(document.getElementById("token-panel"), TOKEN_KEY, driverId);
+    });
 
   function tripRow(t, action) {
     return (
@@ -92,7 +99,7 @@
     if (ev.target.classList.contains("accept-btn")) {
       ev.target.disabled = true;
       try {
-        await RF.postJSON("/api/trips/" + id + "/accept", { driverId: driverId });
+        await RF.postJSON("/api/trips/" + id + "/accept", { driverId: driverId }, localStorage.getItem(TOKEN_KEY));
       } catch (err) {
         alert(err.message || RF.t("driver.error.accept"));
         ev.target.disabled = false;
@@ -102,7 +109,7 @@
     if (ev.target.classList.contains("complete-btn")) {
       ev.target.disabled = true;
       try {
-        await RF.postJSON("/api/trips/" + id + "/complete", {});
+        await RF.postJSON("/api/trips/" + id + "/complete", { driverId: driverId }, localStorage.getItem(TOKEN_KEY));
       } catch (err) {
         alert(err.message || RF.t("driver.error.complete"));
         ev.target.disabled = false;

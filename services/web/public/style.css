@@ -23,6 +23,15 @@
   box-sizing: border-box;
 }
 
+/* Global "please wait" cursor while any request started by RF.postJSON /
+   RF.fetchNewToken is in flight (app.js) -- some of these, like stopping or
+   starting the gateway container, take real seconds. The !important beats
+   the browser's own default pointer cursor on buttons/links. */
+html.rf-busy,
+html.rf-busy * {
+  cursor: wait !important;
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -261,6 +270,11 @@ button:disabled {
   color: #fff;
 }
 
+.btn-success {
+  background: var(--success);
+  color: #fff;
+}
+
 .btn-block {
   width: 100%;
 }
@@ -426,19 +440,19 @@ button:disabled {
   text-align: end;
 }
 
-/* API metric field names (tripsCreated, breakerOpens, ...) are kept as
-   literal English identifiers, not translated -- they're the exact field
-   names in each service's /metrics response, which the report needs to cite
-   verbatim against the code. */
+/* Metric labels are localized (see RF.metricLabel / "metric.*" strings) --
+   the raw field name (tripsCreated, breakerOpens, ...) is still available as
+   a tooltip (title=) for citing against the code, and any metric without a
+   translation yet falls back to showing that raw identifier directly, in
+   which case it gets the .mono treatment below instead. */
 .tile .key {
-  font-family: "IBM Plex Mono", monospace;
   font-size: 10.5px;
   color: var(--muted);
+  margin-top: 2px;
+}
+.tile .key.mono {
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  margin-top: 2px;
-  direction: ltr;
-  text-align: end;
 }
 
 .tile.warn .value {
