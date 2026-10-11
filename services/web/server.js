@@ -35,7 +35,7 @@ async function getToken() {
 // --- internal poll loop: builds the snapshot every page reads live ---------
 // Reads go direct to trip-service (server-to-server, same pattern `monitor`
 // already uses) -- only user-initiated writes go through the gateway.
-let snapshot = { updatedAt: null, trips: [], metrics: {}, queues: {} };
+let snapshot = { updatedAt: null, trips: [], outbox: [], processedEvents: [], metrics: {}, queues: {} };
 const timelineCache = new Map(); // tripId -> { payment, notification }
 
 function isSettled(entry) {
@@ -78,6 +78,22 @@ async function pollOnce() {
     console.error("[web] trip-service poll failed:", err.message);
   }
 
+  let outbox = [];
+  try {
+    const res = await fetch(`${TRIP_SERVICE_URL}/v1/outbox`, { signal: AbortSignal.timeout(2000) });
+    outbox = await res.json();
+  } catch (err) {
+    console.error("[web] trip-service outbox poll failed:", err.message);
+  }
+
+  let processedEvents = [];
+  try {
+    const res = await fetch(`${PAYMENT_SERVICE_URL}/v1/processed-events`, { signal: AbortSignal.timeout(2000) });
+    processedEvents = await res.json();
+  } catch (err) {
+    console.error("[web] payment-service processed-events poll failed:", err.message);
+  }
+
   const completed = trips.filter((t) => t.status === "completed");
   await Promise.all(completed.map((t) => resolveTimeline(t.id)));
 
@@ -92,6 +108,8 @@ async function pollOnce() {
   snapshot = {
     updatedAt: new Date().toISOString(),
     trips: trips.map((t) => ({ ...t, timeline: timelineCache.get(t.id) || { payment: null, notification: null } })),
+    outbox,
+    processedEvents,
     metrics: metricsSnapshot.services || {},
     queues: metricsSnapshot.queues || {},
   };

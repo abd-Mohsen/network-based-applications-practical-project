@@ -26,26 +26,69 @@
     <div class="ts" id="ts" style="margin-top:8px;"></div>
   </div>
 
-  <div class="card" style="overflow-x:auto;">
-    <table id="trips-table" class="mono">
-      <thead>
-        <tr>
-          <th data-i18n="table.col.id"></th>
-          <th data-i18n="table.col.origin"></th>
-          <th data-i18n="table.col.destination"></th>
-          <th data-i18n="table.col.fare"></th>
-          <th data-i18n="table.col.status"></th>
-          <th data-i18n="table.col.riderId"></th>
-          <th data-i18n="table.col.driverId"></th>
-          <th data-i18n="table.col.createdAt"></th>
-          <th data-i18n="table.col.acceptedAt"></th>
-          <th data-i18n="table.col.completedAt"></th>
-          <th data-i18n="table.col.cancelledAt"></th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <p id="empty-hint" class="hint" data-i18n="table.empty" hidden></p>
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab-btn active" data-tab="trips" role="tab">trips</button>
+    <button type="button" class="tab-btn" data-tab="outbox" role="tab">outbox</button>
+    <button type="button" class="tab-btn" data-tab="processed-events" role="tab">processed_events</button>
+  </div>
+
+  <div class="tab-panel" data-panel="trips">
+    <div class="card" style="overflow-x:auto;">
+      <table id="trips-table" class="mono">
+        <thead>
+          <tr>
+            <th data-i18n="table.col.id"></th>
+            <th data-i18n="table.col.origin"></th>
+            <th data-i18n="table.col.destination"></th>
+            <th data-i18n="table.col.fare"></th>
+            <th data-i18n="table.col.status"></th>
+            <th data-i18n="table.col.riderId"></th>
+            <th data-i18n="table.col.driverId"></th>
+            <th data-i18n="table.col.createdAt"></th>
+            <th data-i18n="table.col.acceptedAt"></th>
+            <th data-i18n="table.col.completedAt"></th>
+            <th data-i18n="table.col.cancelledAt"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p id="trips-empty-hint" class="hint" data-i18n="table.empty" hidden></p>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-panel="outbox" hidden>
+    <div class="card" style="overflow-x:auto;">
+      <table id="outbox-table" class="mono">
+        <thead>
+          <tr>
+            <th data-i18n="table.col.id"></th>
+            <th data-i18n="table.col.eventType"></th>
+            <th data-i18n="table.col.payload"></th>
+            <th data-i18n="table.col.published"></th>
+            <th data-i18n="table.col.createdAt"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p id="outbox-empty-hint" class="hint" data-i18n="table.empty" hidden></p>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-panel="processed-events" hidden>
+    <div class="card" style="overflow-x:auto;">
+      <table id="processed-events-table" class="mono">
+        <thead>
+          <tr>
+            <th data-i18n="table.col.eventId"></th>
+            <th data-i18n="table.col.tripId"></th>
+            <th data-i18n="table.col.approved"></th>
+            <th data-i18n="table.col.processedAt"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p id="processed-events-empty-hint" class="hint" data-i18n="table.empty" hidden></p>
+    </div>
   </div>
 </div>
 <script src="/app.js"></script>

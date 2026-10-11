@@ -238,6 +238,37 @@ a {
   }
 }
 
+/* --- tabs ----------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 18px;
+}
+
+.tab-btn {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab-btn:hover {
+  color: var(--ink);
+}
+
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 /* --- card --------------------------------------------------------------- */
 
 .card {

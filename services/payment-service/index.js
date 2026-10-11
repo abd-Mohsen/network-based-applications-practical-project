@@ -250,6 +250,20 @@ app.get("/payments/trip/:tripId", (req, res) => {
   });
 });
 
+// Raw processed_events rows for the web control room's table view --
+// read-only, mirrors trip-service's GET /v1/outbox in shape.
+app.get("/v1/processed-events", (req, res) => {
+  const rows = db.prepare("SELECT * FROM processed_events ORDER BY processed_at DESC LIMIT 200").all();
+  res.json(
+    rows.map((row) => ({
+      eventId: row.event_id,
+      tripId: row.trip_id,
+      approved: row.approved === null ? null : Boolean(row.approved),
+      processedAt: row.processed_at,
+    }))
+  );
+});
+
 app.get("/metrics", (req, res) => {
   res.json({ ...metrics, breakerState: breaker.state });
 });

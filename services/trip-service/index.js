@@ -364,6 +364,21 @@ app.get("/metrics", (req, res) => {
   res.json({ ...metrics, outboxPending: pending, duplicateNextN });
 });
 
+// Raw outbox rows for the web control room's table view -- read-only, mirrors
+// GET /v1/trips in shape (most recent first, capped).
+app.get("/v1/outbox", (req, res) => {
+  const rows = db.prepare("SELECT * FROM outbox ORDER BY created_at DESC LIMIT 200").all();
+  res.json(
+    rows.map((row) => ({
+      id: row.id,
+      eventType: row.event_type,
+      payload: row.payload,
+      published: Boolean(row.published),
+      createdAt: row.created_at,
+    }))
+  );
+});
+
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
 app.listen(PORT, () => console.log(`[trip-service] listening on ${PORT}`));
