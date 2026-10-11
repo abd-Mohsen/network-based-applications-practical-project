@@ -125,6 +125,16 @@ app.post("/chaos/resume-consumer", async (req, res) => {
   res.json({ paused: metrics.consumerPaused });
 });
 
+// Clears the in-memory webhook log -- backs the web table page's "delete
+// all test data" button, so old trips' webhook records don't linger once
+// the trips themselves are gone. Dev/demo-only: no auth, same trust level
+// as /chaos/*.
+app.post("/admin/reset", (req, res) => {
+  const webhookLogCleared = webhookLog.length;
+  webhookLog.length = 0;
+  res.json({ webhookLogCleared });
+});
+
 app.get("/metrics", (req, res) => res.json(metrics));
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 

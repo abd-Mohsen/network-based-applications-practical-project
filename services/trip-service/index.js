@@ -115,6 +115,12 @@ async function publishDirect(payload) {
 // Outbox poller: this is what makes publishing crash-safe. The event row was
 // already committed to SQLite in the same transaction as the trip row, so a
 // RabbitMQ outage just delays publishing -- it never loses the event.
+//
+// Once a row is confirmed published, it's deleted rather than flagged --
+// the outbox table is a staging area for not-yet-delivered events, not a
+// permanent log (that's what payment-service's processed_events is for on
+// the consumer side). This keeps the table's row count equal to
+// metrics.outboxPending at all times.
 async function outboxLoop() {
   while (true) {
     await sleep(1000);
@@ -136,7 +142,7 @@ async function outboxLoop() {
           duplicateNextN--;
           metrics.chaosDuplicatesSent++;
         }
-        db.prepare("UPDATE outbox SET published = 1 WHERE id = ?").run(row.id);
+        db.prepare("DELETE FROM outbox WHERE id = ?").run(row.id);
         metrics.outboxPublished++;
       } catch (err) {
         console.error("[trip-service] outbox publish failed, will retry:", err.message);
@@ -377,6 +383,17 @@ app.get("/v1/outbox", (req, res) => {
       createdAt: row.created_at,
     }))
   );
+});
+
+// Wipes all rows from both tables -- backs the web table page's "delete all
+// test data" button. Dev/demo-only: no auth, same trust level as /chaos/*.
+app.post("/admin/reset", (req, res) => {
+  const tx = db.transaction(() => {
+    const trips = db.prepare("DELETE FROM trips").run().changes;
+    const outbox = db.prepare("DELETE FROM outbox").run().changes;
+    return { trips, outbox };
+  });
+  res.json(tx());
 });
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));

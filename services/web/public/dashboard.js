@@ -7,11 +7,14 @@
     "publishFailedLost",
     "authFailures",
     "rateLimited",
-    "webhookSignatureFailures",
-    "webhookSendFailures",
     "forcedFailures",
     "breakerShortCircuits",
   ];
+
+  // Hidden from the dashboard card entirely, per request -- the metrics are
+  // still collected server-side (notification-service's /metrics), just not
+  // rendered as tiles here.
+  const HIDDEN_KEYS = ["webhookSendFailures", "webhookSignatureFailures"];
 
   function tileClass(key, value) {
     if (typeof value !== "number") return "";
@@ -47,7 +50,7 @@
 
     const tiles = Object.keys(m)
       .filter(function (k) {
-        return k !== "ok" && typeof m[k] === "number";
+        return k !== "ok" && typeof m[k] === "number" && HIDDEN_KEYS.indexOf(k) === -1;
       })
       .map(function (k) {
         return (

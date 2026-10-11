@@ -76,6 +76,34 @@ html.rf-busy * {
   cursor: wait !important;
 }
 
+/* Trace-id toast (app.js RF.showTraceToast) -- fixed to a bottom corner so
+   it never shifts page layout, shown briefly after every RF.postJSON call. */
+.rf-trace-toast {
+  position: fixed;
+  bottom: 18px;
+  inset-inline-end: 18px;
+  z-index: 1000;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  direction: ltr;
+  text-align: left;
+  max-width: calc(100vw - 36px);
+  overflow-wrap: break-word;
+}
+.rf-trace-toast.visible {
+  opacity: 0.95;
+  transform: translateY(0);
+}
+
 body {
   margin: 0;
   background: var(--bg);

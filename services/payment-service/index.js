@@ -268,6 +268,13 @@ app.get("/metrics", (req, res) => {
   res.json({ ...metrics, breakerState: breaker.state });
 });
 
+// Wipes processed_events -- backs the web table page's "delete all test
+// data" button. Dev/demo-only: no auth, same trust level as /chaos/*.
+app.post("/admin/reset", (req, res) => {
+  const processedEvents = db.prepare("DELETE FROM processed_events").run().changes;
+  res.json({ processedEvents });
+});
+
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
 app.listen(PORT, () => console.log(`[payment-service] listening on ${PORT}`));

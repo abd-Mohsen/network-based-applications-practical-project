@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import http from "http";
 import { fileURLToPath } from "url";
+import { trace } from "@opentelemetry/api";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 8080;
@@ -127,6 +128,16 @@ function broadcast() {
 
 const app = express();
 app.use(express.json());
+
+// Surfaces the OTel trace id for every request on this BFF as a response
+// header -- the browser is where the trace starts for any user-initiated
+// write, so this is the one place that needs to read it. Paste the value
+// into Jaeger's search (service "web") to see the full cross-service trace.
+app.use((req, res, next) => {
+  const span = trace.getActiveSpan();
+  if (span) res.setHeader("X-Trace-Id", span.spanContext().traceId);
+  next();
+});
 
 app.get("/events", (req, res) => {
   res.writeHead(200, {
@@ -298,6 +309,25 @@ app.post("/api/chaos/latency-fraud", async (req, res) => {
     body: JSON.stringify({ ms: Number(req.body?.ms) || 0 }),
   });
   res.status(r.status).json(await r.json());
+});
+
+// Wipes all "test data" -- every row in trip-service's trips/outbox,
+// payment-service's processed_events, plus notification-service's
+// in-memory webhook log -- and drops this BFF's own per-trip timeline
+// cache so nothing stale lingers. Backs the table page's delete button.
+app.post("/api/test-data/clear", async (req, res) => {
+  try {
+    const [trip, payment, notification] = await Promise.all([
+      fetch(`${TRIP_SERVICE_URL}/admin/reset`, { method: "POST" }).then((r) => r.json()),
+      fetch(`${PAYMENT_SERVICE_URL}/admin/reset`, { method: "POST" }).then((r) => r.json()),
+      fetch(`${NOTIFICATION_SERVICE_URL}/admin/reset`, { method: "POST" }).then((r) => r.json()),
+    ]);
+    timelineCache.clear();
+    await pollOnce();
+    res.json({ trip, payment, notification });
+  } catch (err) {
+    res.status(502).json({ error: `clearing test data failed: ${err.message}` });
+  }
 });
 
 app.post("/api/chaos/generate-trips", async (req, res) => {

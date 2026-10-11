@@ -73,7 +73,7 @@ window.RF = (function () {
         "كل رقم هنا مسحوب مباشرةً من نقطة <code>/metrics</code> الخاصّة بكل خدمة، إضافةً إلى واجهة إدارة RabbitMQ لعمق الطوابير — «راقب الوصلة لا الطرفين فقط».",
       "dash.queues.heading": "طوابير RabbitMQ",
       "dash.table.queue": "الطابور",
-      "dash.table.depth": "العمق",
+      "dash.table.depth": "الحجم",
       "dash.table.consumers": "المستهلكون",
       "dash.unreachable": "غير متاح",
       "dash.breaker": "القاطع",
@@ -106,6 +106,9 @@ window.RF = (function () {
       "table.col.approved": "قُبل",
       "table.col.processedAt": "عولج في",
       "table.empty": "لا توجد صفوف بعد.",
+      "table.clear.button": "حذف كل بيانات التجربة",
+      "table.clear.confirm": "سيحذف هذا كل الصفوف من trips وoutbox وprocessed_events نهائياً. هل تريد الاستمرار؟",
+      "table.clear.error": "تعذّر حذف بيانات التجربة",
 
       "control.title": "غرفة التحكم",
       "control.subtitle":
@@ -174,6 +177,8 @@ window.RF = (function () {
         "هذا هو الرمز المُرسَل مع كل طلب كتابة عبر البوّابة. عدِّله يدوياً لتكسره عمداً وشاهد البوّابة ترفض الطلب التالي — أو اضغط «توليد رمز جديد» لاستعادة رمز صالح لهذا المستخدم.",
       "token.reset.button": "توليد رمز جديد",
       "token.invalid": "تعذّر فك تشفير الرمز — تنسيق غير صالح",
+
+      "trace.toast": "معرّف التتبّع (Jaeger): {id}",
     },
     en: {
       "nav.rider": "Rider",
@@ -241,7 +246,7 @@ window.RF = (function () {
         "Every number here is polled straight from each service's own <code>/metrics</code> endpoint, plus RabbitMQ's management API for queue depth — \"watch the connection, not just the endpoints.\"",
       "dash.queues.heading": "RabbitMQ queues",
       "dash.table.queue": "Queue",
-      "dash.table.depth": "Depth",
+      "dash.table.depth": "Size",
       "dash.table.consumers": "Consumers",
       "dash.unreachable": "unreachable",
       "dash.breaker": "breaker",
@@ -274,6 +279,9 @@ window.RF = (function () {
       "table.col.approved": "Approved",
       "table.col.processedAt": "Processed at",
       "table.empty": "No rows yet.",
+      "table.clear.button": "Delete all test data",
+      "table.clear.confirm": "This will permanently delete every row in trips, outbox, and processed_events. Continue?",
+      "table.clear.error": "could not delete test data",
 
       "control.title": "Control room",
       "control.subtitle":
@@ -342,6 +350,8 @@ window.RF = (function () {
         'This is the token sent with every write through the gateway. Edit it to break it on purpose and watch the gateway reject the next request — or click "New token" to get a fresh, valid one for this user.',
       "token.reset.button": "New token",
       "token.invalid": "could not decode token — invalid format",
+
+      "trace.toast": "Jaeger trace id: {id}",
     },
   };
 
@@ -569,6 +579,27 @@ window.RF = (function () {
     });
   };
 
+  // Shows the current request's OTel trace id briefly in a corner toast --
+  // copy it into Jaeger's search (http://localhost:16686, service "web") to
+  // see this exact request's full cross-service trace.
+  let traceToastTimer = null;
+  RF.showTraceToast = function (traceId) {
+    if (!traceId) return;
+    let el = document.getElementById("rf-trace-toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "rf-trace-toast";
+      el.className = "rf-trace-toast";
+      document.body.appendChild(el);
+    }
+    el.textContent = RF.t("trace.toast").replace("{id}", traceId);
+    el.classList.add("visible");
+    clearTimeout(traceToastTimer);
+    traceToastTimer = setTimeout(function () {
+      el.classList.remove("visible");
+    }, 6000);
+  };
+
   RF.postJSON = async function (url, body, token) {
     beginBusy();
     try {
@@ -579,6 +610,7 @@ window.RF = (function () {
           : { "content-type": "application/json" },
         body: JSON.stringify(body || {}),
       });
+      RF.showTraceToast(res.headers.get("x-trace-id"));
       const data = await res.json().catch(function () {
         return {};
       });

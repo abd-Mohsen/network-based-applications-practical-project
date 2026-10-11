@@ -76,4 +76,16 @@
   }
 
   RF.connectEvents(render);
+
+  document.getElementById("clear-test-data").addEventListener("click", async function (ev) {
+    if (!confirm(RF.t("table.clear.confirm"))) return;
+    ev.target.disabled = true;
+    try {
+      await RF.postJSON("/api/test-data/clear", {});
+    } catch (err) {
+      alert(err.message || RF.t("table.clear.error"));
+    } finally {
+      ev.target.disabled = false;
+    }
+  });
 })();
