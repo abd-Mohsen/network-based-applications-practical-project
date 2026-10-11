@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function () {
+  var l = localStorage.getItem("rideflow.lang") || "ar";
+  document.documentElement.lang = l;
+  document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+  var t = localStorage.getItem("rideflow.theme");
+  if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
+})();
+</script>
+<title>RideFlow — Table</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="nav"></div>
+<div class="page">
+  <div class="page-header">
+    <h1 data-i18n="table.title"></h1>
+    <p data-i18n="table.subtitle"></p>
+    <div class="ts" id="ts" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="card" style="overflow-x:auto;">
+    <table id="trips-table" class="mono">
+      <thead>
+        <tr>
+          <th data-i18n="table.col.id"></th>
+          <th data-i18n="table.col.origin"></th>
+          <th data-i18n="table.col.destination"></th>
+          <th data-i18n="table.col.fare"></th>
+          <th data-i18n="table.col.status"></th>
+          <th data-i18n="table.col.riderId"></th>
+          <th data-i18n="table.col.driverId"></th>
+          <th data-i18n="table.col.createdAt"></th>
+          <th data-i18n="table.col.acceptedAt"></th>
+          <th data-i18n="table.col.completedAt"></th>
+          <th data-i18n="table.col.cancelledAt"></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p id="empty-hint" class="hint" data-i18n="table.empty" hidden></p>
+  </div>
+</div>
+<script src="/app.js"></script>
+<script src="/table.js"></script>
+</body>
+</html>

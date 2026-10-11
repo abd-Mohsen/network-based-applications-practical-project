@@ -43,7 +43,7 @@ function requireAuth(req, res, next) {
 // req.ip are fallbacks for callers that don't carry a per-user token (e.g.
 // chaos/chaos.js's bulk load generation, which uses one shared client).
 const WINDOW_MS = 60_000;
-const MAX_PER_WINDOW = 2;
+const MAX_PER_WINDOW = 20;
 const buckets = new Map();
 function rateLimit(req, res, next) {
   const key = req.auth?.clientId || req.headers["x-user-id"] || req.ip;

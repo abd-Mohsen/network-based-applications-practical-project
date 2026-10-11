@@ -11,6 +11,7 @@ window.RF = (function () {
       "nav.rider": "الراكب",
       "nav.driver": "السائق",
       "nav.dashboard": "لوحة القيادة",
+      "nav.table": "الجدول",
       "nav.control": "غرفة التحكم",
       "lang.toggle": "English",
       "theme.toDark": "تفعيل الوضع الداكن",
@@ -84,6 +85,21 @@ window.RF = (function () {
       "dash.nonEmpty": "غير فارغ",
       "dash.updatedAgo": "آخر تحديث",
 
+      "table.title": "جدول الرحلات",
+      "table.subtitle": "عرض مباشر وخام لجدول trips في trip-service — كل صفّ هنا هو سطر في قاعدة البيانات.",
+      "table.col.id": "المعرّف",
+      "table.col.origin": "الانطلاق",
+      "table.col.destination": "الوجهة",
+      "table.col.fare": "الأجرة",
+      "table.col.status": "الحالة",
+      "table.col.riderId": "الراكب",
+      "table.col.driverId": "السائق",
+      "table.col.createdAt": "أُنشئت",
+      "table.col.acceptedAt": "قُبلت",
+      "table.col.completedAt": "اكتملت",
+      "table.col.cancelledAt": "أُلغيت",
+      "table.empty": "لا توجد صفوف بعد.",
+
       "control.title": "غرفة التحكم",
       "control.subtitle":
         'كل ما يفعله <code>chaos/chaos.js</code> من الطرفية، كأزرار. استخدمها لتشغيل التجارب في <code>docs/dimensions/</code> بينما تراقب <a href="/dashboard">لوحة القيادة</a> في تبويب آخر.',
@@ -156,6 +172,7 @@ window.RF = (function () {
       "nav.rider": "Rider",
       "nav.driver": "Driver",
       "nav.dashboard": "Dashboard",
+      "nav.table": "Table",
       "nav.control": "Control",
       "lang.toggle": "العربية",
       "theme.toDark": "Switch to dark mode",
@@ -228,6 +245,21 @@ window.RF = (function () {
       "dash.breaker.closed": "closed",
       "dash.nonEmpty": "non-empty",
       "dash.updatedAgo": "updated",
+
+      "table.title": "Trips table",
+      "table.subtitle": "A live, raw view of trip-service's trips table — every row here is a row in the database.",
+      "table.col.id": "ID",
+      "table.col.origin": "Origin",
+      "table.col.destination": "Destination",
+      "table.col.fare": "Fare",
+      "table.col.status": "Status",
+      "table.col.riderId": "Rider",
+      "table.col.driverId": "Driver",
+      "table.col.createdAt": "Created",
+      "table.col.acceptedAt": "Accepted",
+      "table.col.completedAt": "Completed",
+      "table.col.cancelledAt": "Cancelled",
+      "table.empty": "No rows yet.",
 
       "control.title": "Control room",
       "control.subtitle":
@@ -633,6 +665,7 @@ window.RF = (function () {
       ["/", RF.t("nav.rider")],
       ["/driver", RF.t("nav.driver")],
       ["/dashboard", RF.t("nav.dashboard")],
+      ["/table", RF.t("nav.table")],
       ["/control", RF.t("nav.control")],
     ];
     const links = items

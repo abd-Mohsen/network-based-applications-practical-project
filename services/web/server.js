@@ -306,6 +306,7 @@ app.post("/api/chaos/generate-trips", async (req, res) => {
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "rider.html")));
 app.get("/driver", (req, res) => res.sendFile(path.join(__dirname, "public", "driver.html")));
 app.get("/dashboard", (req, res) => res.sendFile(path.join(__dirname, "public", "dashboard.html")));
+app.get("/table", (req, res) => res.sendFile(path.join(__dirname, "public", "table.html")));
 app.get("/control", (req, res) => res.sendFile(path.join(__dirname, "public", "control.html")));
 app.use(express.static(path.join(__dirname, "public")));
 
